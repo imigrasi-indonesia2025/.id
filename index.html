@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imigrasi Indonesia - Pembayaran Paspor Online</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #003366 0%, #0055a4 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .popup-container {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .popup-header {
+            background: linear-gradient(135deg, #003366 0%, #0055a4 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            background: white;
+            border-radius: 10px;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 5px;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .popup-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .timer-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .timer-icon {
+            font-size: 24px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .timer-text {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .popup-content {
+            padding: 30px 20px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #003366;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+        }
+
+        .payment-details {
+            background: #e3f2fd;
+            border: 2px solid #90caf9;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .payment-row.total {
+            border-top: 2px solid #003366;
+            padding-top: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #003366;
+        }
+
+        .code-section {
+            background: #e8f5e9;
+            border: 2px solid #81c784;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .code-label {
+            font-size: 14px;
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .code-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .payment-code {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e7d32;
+            letter-spacing: 1px;
+            flex: 1;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .copy-btn.copied {
+            background: #2e7d32;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #003366;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #002244;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .warning-text {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .warning-text i {
+            margin-right: 8px;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Processing state */
+        .processing {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .processing::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            to { left: 100%; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .popup-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .popup-header {
+                padding: 20px 15px;
+            }
+
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+
+            .popup-title {
+                font-size: 16px;
+            }
+
+            .popup-subtitle {
+                font-size: 13px;
+            }
+
+            .popup-content {
+                padding: 20px 15px;
+            }
+
+            .info-item {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .info-value {
+                text-align: left;
+                max-width: 100%;
+            }
+
+            .code-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .payment-code {
+                text-align: center;
+                word-break: break-all;
+            }
+
+            .copy-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Payment status indicator */
+        .payment-status {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            color: #2196f3;
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .status-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #003366;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-overlay">
+        <div class="popup-container">
+            <div class="popup-header">
+                <div class="logo">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMK0KWwLux-ioYGL0wZM6bxmyIUheLEjbdqnqwu7RVAMSMfcwBVR1mLTVnX2Y5cOUYShU&usqp=CAU" alt="Logo Imigrasi Indonesia">
+                </div>
+                <h2 class="popup-title">Imigrasi Indonesia</h2>
+                <p class="popup-subtitle">Pendaftaran Paspor Online</p>
+                
+                <div class="timer-container">
+                    <i class="fas fa-clock timer-icon"></i>
+                    <span class="timer-text" id="timer">02:00:00</span>
+                </div>
+            </div>
+
+            <div class="popup-content">
+                <div class="info-section">
+                    <h3 class="info-title">
+                        <i class="fas fa-user"></i>
+                        Data Pemohon
+                    </h3>
+                    <div class="info-item">
+                        <span class="info-label">Nama Lengkap</span>
+                        <span class="info-value">DIAN AININA NUR SABILA</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">NIK</span>
+                        <span class="info-value">3504104402060003</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Lokasi Kedatangan</span>
+                        <span class="info-value">KANTOR IMIGRASI KELAS II BELITAR</span>
+                    </div>
+                </div>
+
+                <div class="payment-details">
+                    <h3 class="info-title">
+                        <i class="fas fa-receipt"></i>
+                        Rincian Pembayaran
+                    </h3>
+                    <div class="payment-row">
+                        <span>Biaya Paspor 5 Tahun</span>
+                        <span>Rp 650.000</span>
+                    </div>
+                    <div class="payment-row">
+                        <span>Biaya Admin</span>
+                        <span>Rp 3.500</span>
+                    </div>
+                    <div class="payment-row total">
+                        <span>Total Pembayaran</span>
+                        <span>Rp 653.500</span>
+                    </div>
+                </div>
+
+                <div class="code-section">
+                    <div class="code-label">
+                        <i class="fas fa-barcode"></i>
+                        Kode Pembayaran
+                    </div>
+                    <div class="code-container">
+                        <span class="payment-code" id="paymentCode">135036000032845387</span>
+                        <button class="copy-btn" onclick="copyCode()">
+                            <i class="fas fa-copy"></i>
+                            <span id="copyText">Salin</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="payment-status" id="paymentStatus" style="display: none;">
+                    <i class="fas fa-spinner status-icon"></i>
+                    <p class="status-text">Sedang Memproses Pembayaran...</p>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="payButton" onclick="proceedPayment()">
+                        <i class="fas fa-credit-card"></i>
+                        <span id="payButtonText">Bayar Sekarang</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="closePopup()">
+                        <i class="fas fa-times"></i>
+                        Tutup
+                    </button>
+                </div>
+
+                <div class="warning-text">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Silahkan lakukan pembayaran dalam waktu 2 jam. Jika waktu habis, permohonan Anda akan dibatalkan secara otomatis.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Timer functionality with localStorage persistence
+        let timeLeft = 7200; // 2 hours in seconds
+        const timerKey = 'passport_payment_timer';
+        const timerStartTime = 'passport_timer_start';
+        let isProcessing = false;
+
+        // Initialize timer
+        function initTimer() {
+            const savedTime = localStorage.getItem(timerKey);
+            const startTime = localStorage.getItem(timerStartTime);
+            
+            if (savedTime && startTime) {
+                const elapsed = Math.floor((Date.now() - parseInt(startTime)) / 1000);
+                timeLeft = Math.max(0, parseInt(savedTime) - elapsed);
+            } else {
+                localStorage.setItem(timerStartTime, Date.now().toString());
+                localStorage.setItem(timerKey, timeLeft.toString());
+            }
+            
+            updateTimerDisplay();
+            
+            if (timeLeft > 0) {
+                startTimer();
+            } else {
+                handleTimeExpired();
+            }
+        }
+
+        function startTimer() {
+            const timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    localStorage.setItem(timerKey, timeLeft.toString());
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    handleTimeExpired();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.floor((timeLeft % 3600) / 60);
+            const seconds = timeLeft % 60;
+            
+            const display = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('timer').textContent = display;
+            
+            // Change color when less than 10 minutes
+            if (timeLeft < 600) {
+                document.querySelector('.timer-container').style.background = 'rgba(255, 0, 0, 0.2)';
+                document.querySelector('.timer-icon').style.color = '#ff0000';
+            }
+        }
+
+        function handleTimeExpired() {
+            document.querySelector('.timer-container').innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="color: #ff0000; font-size: 24px;"></i>
+                <span class="timer-text" style="color: #ff0000;">Waktu Habis</span>
+            `;
+            
+            // Disable payment button
+            const payButton = document.getElementById('payButton');
+            payButton.disabled = true;
+            payButton.style.background = '#ccc';
+            payButton.innerHTML = '<i class="fas fa-ban"></i> Waktu Habis';
+            
+            // Show expired message
+            const warningText = document.querySelector('.warning-text');
+            warningText.innerHTML = '<i class="fas fa-times-circle"></i> Waktu pembayaran telah habis. Silahkan ajukan permohonan baru.';
+            warningText.style.background = '#f8d7da';
+            warningText.style.borderColor = '#dc3545';
+            warningText.style.color = '#721c24';
+            
+            // Hide payment status if showing
+            document.getElementById('paymentStatus').style.display = 'none';
+        }
+
+        // Copy code functionality
+        function copyCode() {
+            const code = document.getElementById('paymentCode').textContent;
+            const copyBtn = document.querySelector('.copy-btn');
+            const copyText = document.getElementById('copyText');
+            
+            navigator.clipboard.writeText(code).then(() => {
+                copyBtn.classList.add('copied');
+                copyText.innerHTML = '<i class="fas fa-check"></i> Tersalin';
+                
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyText.innerHTML = '<i class="fas fa-copy"></i> Salin';
+                }, 2000);
+            });
+        }
+
+        // Payment processing - continuous loading until time expires
+        function proceedPayment() {
+            if (isProcessing) return;
+            
+            isProcessing = true;
+            const payButton = document.getElementById('payButton');
+            const payButtonText = document.getElementById('payButtonText');
+            const paymentStatus = document.getElementById('paymentStatus');
+            
+            // Show payment status
+            paymentStatus.style.display = 'block';
+            
+            // Update button to continuous loading state
+            payButton.classList.add('processing');
+            payButtonText.innerHTML = '<div class="loading"></div> Memproses...';
+            payButton.disabled = true;
+            
+            // Keep the button in loading state until timer expires
+            // The loading will continue until handleTimeExpired() is called
+        }
+
+        // Close popup
+        function closePopup() {
+            if (isProcessing) {
+                if (confirm('Pembayaran sedang diproses. Apakah Anda yakin ingin menutup halaman ini?')) {
+                    document.querySelector('.popup-overlay').style.display = 'none';
+                }
+            } else {
+                if (confirm('Apakah Anda yakin ingin menutup halaman ini? Waktu pembayaran akan terus berjalan.')) {
+                    document.querySelector('.popup-overlay').style.display = 'none';
+                }
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initTimer);
+
+        // Prevent accidental page close
+        window.addEventListener('beforeunload', (e) => {
+            if (timeLeft > 0 && !isProcessing) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Add continuous animation to processing icon
+        setInterval(() => {
+            if (isProcessing && timeLeft > 0) {
+                const statusIcon = document.querySelector('.status-icon');
+                if (statusIcon) {
+                    statusIcon.style.animation = 'none';
+                    setTimeout(() => {
+                        statusIcon.style.animation = 'bounce 2s infinite, spin 2s linear infinite';
+                    }, 10);
+                }
+            }
+        }, 4000);
+    </script>
+</body>
+</html>
